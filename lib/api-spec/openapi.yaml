@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Dryko CRM API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: contacts
+    description: Contact management
+  - name: conversations
+    description: Conversation history
 paths:
   /healthz:
     get:
@@ -24,6 +28,248 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /contacts:
+    get:
+      operationId: listContacts
+      tags: [contacts]
+      summary: List contacts
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: tag
+          in: query
+          schema: { type: string }
+        - name: canal
+          in: query
+          schema:
+            type: string
+            enum: [whatsapp, email, instagram, telefone]
+      responses:
+        "200":
+          description: List of contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contact"
+    post:
+      operationId: createContact
+      tags: [contacts]
+      summary: Create a contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "409":
+          description: Duplicate phone or email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /contacts/stats:
+    get:
+      operationId: getContactStats
+      tags: [contacts]
+      summary: Get contact statistics
+      responses:
+        "200":
+          description: Contact statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactStats"
+
+  /contacts/tags:
+    get:
+      operationId: listTags
+      tags: [contacts]
+      summary: List all unique tags
+      responses:
+        "200":
+          description: List of tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /contacts/import:
+    post:
+      operationId: importContacts
+      tags: [contacts]
+      summary: Import contacts from CSV
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImportInput"
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportResult"
+
+  /contacts/{id}:
+    get:
+      operationId: getContact
+      tags: [contacts]
+      summary: Get a contact by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateContact
+      tags: [contacts]
+      summary: Update a contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactUpdate"
+      responses:
+        "200":
+          description: Updated contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Duplicate phone or email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteContact
+      tags: [contacts]
+      summary: Delete a contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /contacts/{id}/conversations:
+    get:
+      operationId: listConversations
+      tags: [conversations]
+      summary: List conversation history for a contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+    post:
+      operationId: createConversation
+      tags: [conversations]
+      summary: Add a conversation entry for a contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+        "404":
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /conversations/{id}:
+    delete:
+      operationId: deleteConversation
+      tags: [conversations]
+      summary: Delete a conversation entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +280,156 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Contact:
+      type: object
+      required: [id, nome, telefone, canal, tags, notas, criadoEm, atualizadoEm]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        telefone:
+          type: string
+        email:
+          type: ["string", "null"]
+        canal:
+          type: string
+          enum: [whatsapp, email, instagram, telefone]
+        tags:
+          type: array
+          items:
+            type: string
+        notas:
+          type: ["string", "null"]
+        criadoEm:
+          type: string
+          format: date-time
+        atualizadoEm:
+          type: string
+          format: date-time
+
+    ContactInput:
+      type: object
+      required: [nome, telefone, canal]
+      properties:
+        nome:
+          type: string
+          minLength: 1
+        telefone:
+          type: string
+          minLength: 1
+        email:
+          type: ["string", "null"]
+        canal:
+          type: string
+          enum: [whatsapp, email, instagram, telefone]
+        tags:
+          type: array
+          items:
+            type: string
+          default: []
+        notas:
+          type: ["string", "null"]
+
+    ContactUpdate:
+      type: object
+      properties:
+        nome:
+          type: string
+          minLength: 1
+        telefone:
+          type: string
+          minLength: 1
+        email:
+          type: ["string", "null"]
+        canal:
+          type: string
+          enum: [whatsapp, email, instagram, telefone]
+        tags:
+          type: array
+          items:
+            type: string
+        notas:
+          type: ["string", "null"]
+
+    ContactStats:
+      type: object
+      required: [total, porCanal]
+      properties:
+        total:
+          type: integer
+        porCanal:
+          type: array
+          items:
+            $ref: "#/components/schemas/CanalCount"
+
+    CanalCount:
+      type: object
+      required: [canal, total]
+      properties:
+        canal:
+          type: string
+        total:
+          type: integer
+
+    Conversation:
+      type: object
+      required: [id, contatoId, conteudo, canal, direcao, criadoEm]
+      properties:
+        id:
+          type: integer
+        contatoId:
+          type: integer
+        conteudo:
+          type: string
+        canal:
+          type: string
+          enum: [whatsapp, email, instagram, telefone]
+        direcao:
+          type: string
+          enum: [entrada, saida]
+        criadoEm:
+          type: string
+          format: date-time
+
+    ConversationInput:
+      type: object
+      required: [conteudo, canal, direcao]
+      properties:
+        conteudo:
+          type: string
+          minLength: 1
+        canal:
+          type: string
+          enum: [whatsapp, email, instagram, telefone]
+        direcao:
+          type: string
+          enum: [entrada, saida]
+
+    ImportInput:
+      type: object
+      required: [registros]
+      properties:
+        registros:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContactInput"
+
+    ImportResult:
+      type: object
+      required: [importados, erros]
+      properties:
+        importados:
+          type: integer
+        erros:
+          type: array
+          items:
+            type: string
