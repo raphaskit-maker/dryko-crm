@@ -4,6 +4,7 @@ import contactsRouter from "./contacts";
 import conversationsRouter from "./conversations";
 import inboxRouter from "./inbox";
 import respostasRapidasRouter from "./respostas-rapidas";
+import pipelineRouter from "./pipeline";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(contactsRouter);
 router.use(conversationsRouter);
 router.use(inboxRouter);
 router.use(respostasRapidasRouter);
+router.use("/pipeline", pipelineRouter);
 
 export default router;

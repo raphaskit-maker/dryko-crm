@@ -69,12 +69,42 @@ export async function initDb() {
       texto TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS etapas_pipeline (
+      id SERIAL PRIMARY KEY,
+      nome TEXT NOT NULL,
+      ordem INTEGER NOT NULL DEFAULT 0,
+      cor TEXT NOT NULL DEFAULT '#6B7280'
+    );
+
+    CREATE TABLE IF NOT EXISTS negocios (
+      id SERIAL PRIMARY KEY,
+      nome TEXT NOT NULL,
+      valor NUMERIC(12,2) NOT NULL DEFAULT 0,
+      contato_id INTEGER REFERENCES contatos(id) ON DELETE SET NULL,
+      responsavel TEXT,
+      prazo DATE,
+      etapa_id INTEGER REFERENCES etapas_pipeline(id) ON DELETE SET NULL,
+      status TEXT NOT NULL DEFAULT 'ativo' CHECK (status IN ('ativo', 'ganho', 'perdido')),
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS historico_pipeline (
+      id SERIAL PRIMARY KEY,
+      negocio_id INTEGER NOT NULL REFERENCES negocios(id) ON DELETE CASCADE,
+      etapa_anterior TEXT,
+      etapa_nova TEXT NOT NULL,
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
     CREATE INDEX IF NOT EXISTS idx_contatos_telefone ON contatos(telefone);
     CREATE INDEX IF NOT EXISTS idx_contatos_email ON contatos(email);
     CREATE INDEX IF NOT EXISTS idx_interacoes_contato ON interacoes(contato_id);
     CREATE INDEX IF NOT EXISTS idx_conversas_contato ON conversas(contato_id);
     CREATE INDEX IF NOT EXISTS idx_conversas_status ON conversas(status);
     CREATE INDEX IF NOT EXISTS idx_mensagens_conversa ON mensagens(conversa_id);
+    CREATE INDEX IF NOT EXISTS idx_negocios_etapa ON negocios(etapa_id);
+    CREATE INDEX IF NOT EXISTS idx_negocios_status ON negocios(status);
+    CREATE INDEX IF NOT EXISTS idx_historico_negocio ON historico_pipeline(negocio_id);
   `);
 
   await seedInitialData();
@@ -90,7 +120,10 @@ async function seedInitialData() {
   const { rows: rrCount } = await pool.query("SELECT COUNT(*) AS c FROM respostas_rapidas");
   const needsRR = parseInt(rrCount[0].c) === 0;
 
-  if (!needsContatos && !needsInbox && !needsRR) return;
+  const { rows: etapaCount } = await pool.query("SELECT COUNT(*) AS c FROM etapas_pipeline");
+  const needsPipeline = parseInt(etapaCount[0].c) === 0;
+
+  if (!needsContatos && !needsInbox && !needsRR && !needsPipeline) return;
 
   let c1id: number, c2id: number, c3id: number;
 
@@ -188,6 +221,99 @@ async function seedInitialData() {
     await pool.query("INSERT INTO respostas_rapidas (titulo, texto) VALUES ($1,$2)",
       ["Encerramento", "Obrigado pelo contato! Estamos à disposição caso precise de mais informações. Até logo!"]);
   }
+
+  if (needsPipeline) {
+    const { rows: [e1] } = await pool.query(
+      "INSERT INTO etapas_pipeline (nome, ordem, cor) VALUES ($1,$2,$3) RETURNING id",
+      ["Novo Lead", 1, "#3B82F6"]
+    );
+    const { rows: [e2] } = await pool.query(
+      "INSERT INTO etapas_pipeline (nome, ordem, cor) VALUES ($1,$2,$3) RETURNING id",
+      ["Contato Feito", 2, "#8B5CF6"]
+    );
+    const { rows: [e3] } = await pool.query(
+      "INSERT INTO etapas_pipeline (nome, ordem, cor) VALUES ($1,$2,$3) RETURNING id",
+      ["Proposta Enviada", 3, "#F59E0B"]
+    );
+    const { rows: [e4] } = await pool.query(
+      "INSERT INTO etapas_pipeline (nome, ordem, cor) VALUES ($1,$2,$3) RETURNING id",
+      ["Negociação", 4, "#EF4444"]
+    );
+    const { rows: [e5] } = await pool.query(
+      "INSERT INTO etapas_pipeline (nome, ordem, cor) VALUES ($1,$2,$3) RETURNING id",
+      ["Fechado", 5, "#10B981"]
+    );
+
+    const { rows: allContatos } = await pool.query("SELECT id FROM contatos ORDER BY id LIMIT 3");
+    const cid1 = allContatos[0]?.id ?? null;
+    const cid2 = allContatos[1]?.id ?? null;
+    const cid3 = allContatos[2]?.id ?? null;
+
+    const hoje = new Date();
+    const futuro1 = new Date(hoje); futuro1.setDate(hoje.getDate() + 14);
+    const futuro2 = new Date(hoje); futuro2.setDate(hoje.getDate() + 7);
+    const vencido = new Date(hoje); vencido.setDate(hoje.getDate() - 5);
+
+    const negocios = [
+      { nome: "Impermeabilização Residência Silva", valor: 4500, cid: cid1, resp: "João Silva", prazo: futuro1, etapa: e1.id },
+      { nome: "Tratamento Cobertura Comercial ABC", valor: 12800, cid: cid2, resp: "Maria Costa", prazo: futuro2, etapa: e1.id },
+      { nome: "Pintura e Impermeabilização Apto", valor: 6200, cid: cid3, resp: "João Silva", prazo: futuro2, etapa: e2.id },
+      { nome: "Reforma Telhado Industrial Norte", valor: 28500, cid: cid1, resp: "Maria Costa", prazo: vencido, etapa: e3.id },
+      { nome: "Impermeabilização Piscina Olympic", valor: 8900, cid: cid2, resp: "João Silva", prazo: futuro1, etapa: e4.id },
+      { nome: "Tratamento Estrutural Garagem Sul", valor: 15700, cid: cid3, resp: "Maria Costa", prazo: futuro1, etapa: e5.id },
+    ];
+
+    for (const n of negocios) {
+      const { rows: [neg] } = await pool.query(
+        `INSERT INTO negocios (nome, valor, contato_id, responsavel, prazo, etapa_id, status)
+         VALUES ($1,$2,$3,$4,$5,$6,'ativo') RETURNING id`,
+        [n.nome, n.valor, n.cid, n.resp, n.prazo.toISOString().split("T")[0], n.etapa]
+      );
+      const etapaRow = await pool.query("SELECT nome FROM etapas_pipeline WHERE id=$1", [n.etapa]);
+      await pool.query(
+        "INSERT INTO historico_pipeline (negocio_id, etapa_anterior, etapa_nova) VALUES ($1,$2,$3)",
+        [neg.id, null, etapaRow.rows[0].nome]
+      );
+    }
+  }
+}
+
+export function rowToNegocio(row: Record<string, unknown>) {
+  return {
+    id: row.id as number,
+    nome: row.nome as string,
+    valor: parseFloat(row.valor as string),
+    contatoId: (row.contato_id as number | null) ?? null,
+    contatoNome: (row.contato_nome as string | null) ?? null,
+    responsavel: (row.responsavel as string | null) ?? null,
+    prazo: row.prazo ? (row.prazo as Date).toISOString().split("T")[0] : null,
+    etapaId: row.etapa_id as number,
+    etapaNome: row.etapa_nome as string,
+    etapaCor: row.etapa_cor as string,
+    status: row.status as string,
+    criadoEm: (row.criado_em as Date).toISOString(),
+  };
+}
+
+export function rowToEtapa(row: Record<string, unknown>) {
+  return {
+    id: row.id as number,
+    nome: row.nome as string,
+    ordem: row.ordem as number,
+    cor: row.cor as string,
+    totalNegocios: parseInt(String(row.total_negocios ?? "0")),
+    totalValor: parseFloat(String(row.total_valor ?? "0")),
+  };
+}
+
+export function rowToHistorico(row: Record<string, unknown>) {
+  return {
+    id: row.id as number,
+    negocioId: row.negocio_id as number,
+    etapaAnterior: (row.etapa_anterior as string | null) ?? null,
+    etapaNova: row.etapa_nova as string,
+    criadoEm: (row.criado_em as Date).toISOString(),
+  };
 }
 
 export function rowToContact(row: Record<string, unknown>) {

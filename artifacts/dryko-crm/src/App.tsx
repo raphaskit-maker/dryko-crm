@@ -7,6 +7,7 @@ import Dashboard from "@/pages/dashboard";
 import Contacts from "@/pages/contacts";
 import NewContact from "@/pages/new-contact";
 import Inbox from "@/pages/inbox";
+import Pipeline from "@/pages/pipeline";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ function Router() {
         <Route path="/contatos/:id" component={Contacts} />
         <Route path="/contatos" component={Contacts} />
         <Route path="/caixa-de-entrada" component={Inbox} />
+        <Route path="/pipeline" component={Pipeline} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

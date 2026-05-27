@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, UserPlus, Inbox } from "lucide-react";
+import { LayoutDashboard, Users, UserPlus, Inbox, KanbanSquare } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -67,6 +67,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     <Inbox className="w-4 h-4 mr-2" />
                     <span>Caixa de Entrada</span>
                     <InboxBadge />
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.startsWith("/pipeline")}>
+                  <Link href="/pipeline">
+                    <KanbanSquare className="w-4 h-4 mr-2" />
+                    <span>Pipeline</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

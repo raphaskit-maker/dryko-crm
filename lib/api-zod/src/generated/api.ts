@@ -368,3 +368,199 @@ export const DeleteRespostaRapidaParams = zod.object({
 })
 
 
+/**
+ * @summary Get pipeline statistics per stage
+ */
+export const GetPipelineStatsResponse = zod.object({
+  "etapas": zod.array(zod.object({
+  "id": zod.number(),
+  "nome": zod.string(),
+  "ordem": zod.number(),
+  "cor": zod.string(),
+  "totalNegocios": zod.number(),
+  "totalValor": zod.number()
+}))
+})
+
+
+/**
+ * @summary List all pipeline stages
+ */
+export const ListEtapasResponseItem = zod.object({
+  "id": zod.number(),
+  "nome": zod.string(),
+  "ordem": zod.number(),
+  "cor": zod.string(),
+  "totalNegocios": zod.number(),
+  "totalValor": zod.number()
+})
+export const ListEtapasResponse = zod.array(ListEtapasResponseItem)
+
+
+/**
+ * @summary Create a new stage
+ */
+
+
+
+export const CreateEtapaBody = zod.object({
+  "nome": zod.string().min(1),
+  "ordem": zod.number().optional(),
+  "cor": zod.string().optional()
+})
+
+
+/**
+ * @summary Update a stage
+ */
+export const UpdateEtapaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateEtapaBody = zod.object({
+  "nome": zod.string().min(1),
+  "ordem": zod.number().optional(),
+  "cor": zod.string().optional()
+})
+
+export const UpdateEtapaResponse = zod.object({
+  "id": zod.number(),
+  "nome": zod.string(),
+  "ordem": zod.number(),
+  "cor": zod.string(),
+  "totalNegocios": zod.number(),
+  "totalValor": zod.number()
+})
+
+
+/**
+ * @summary Delete a stage (only if empty)
+ */
+export const DeleteEtapaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List all deals
+ */
+export const ListNegociosResponseItem = zod.object({
+  "id": zod.number(),
+  "nome": zod.string(),
+  "valor": zod.number(),
+  "contatoId": zod.number().nullish(),
+  "contatoNome": zod.string().nullish(),
+  "responsavel": zod.string().nullish(),
+  "prazo": zod.string().nullish(),
+  "etapaId": zod.number(),
+  "etapaNome": zod.string(),
+  "etapaCor": zod.string(),
+  "status": zod.enum(['ativo', 'ganho', 'perdido']),
+  "criadoEm": zod.coerce.date()
+})
+export const ListNegociosResponse = zod.array(ListNegociosResponseItem)
+
+
+/**
+ * @summary Create a new deal
+ */
+
+export const createNegocioBodyValorDefault = 0;
+
+export const CreateNegocioBody = zod.object({
+  "nome": zod.string().min(1),
+  "valor": zod.number().default(createNegocioBodyValorDefault),
+  "contatoId": zod.number().nullish(),
+  "responsavel": zod.string().nullish(),
+  "prazo": zod.string().nullish(),
+  "etapaId": zod.number()
+})
+
+
+/**
+ * @summary Get a deal by ID
+ */
+export const GetNegocioParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetNegocioResponse = zod.object({
+  "id": zod.number(),
+  "nome": zod.string(),
+  "valor": zod.number(),
+  "contatoId": zod.number().nullish(),
+  "contatoNome": zod.string().nullish(),
+  "responsavel": zod.string().nullish(),
+  "prazo": zod.string().nullish(),
+  "etapaId": zod.number(),
+  "etapaNome": zod.string(),
+  "etapaCor": zod.string(),
+  "status": zod.enum(['ativo', 'ganho', 'perdido']),
+  "criadoEm": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a deal
+ */
+export const UpdateNegocioParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateNegocioBody = zod.object({
+  "nome": zod.string().min(1).optional(),
+  "valor": zod.number().optional(),
+  "contatoId": zod.number().nullish(),
+  "responsavel": zod.string().nullish(),
+  "prazo": zod.string().nullish(),
+  "etapaId": zod.number().optional(),
+  "status": zod.enum(['ativo', 'ganho', 'perdido']).optional()
+})
+
+export const UpdateNegocioResponse = zod.object({
+  "id": zod.number(),
+  "nome": zod.string(),
+  "valor": zod.number(),
+  "contatoId": zod.number().nullish(),
+  "contatoNome": zod.string().nullish(),
+  "responsavel": zod.string().nullish(),
+  "prazo": zod.string().nullish(),
+  "etapaId": zod.number(),
+  "etapaNome": zod.string(),
+  "etapaCor": zod.string(),
+  "status": zod.enum(['ativo', 'ganho', 'perdido']),
+  "criadoEm": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a deal
+ */
+export const DeleteNegocioParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Get movement history for a deal
+ */
+export const GetHistoricoNegocioParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetHistoricoNegocioResponseItem = zod.object({
+  "id": zod.number(),
+  "negocioId": zod.number(),
+  "etapaAnterior": zod.string().nullish(),
+  "etapaNova": zod.string(),
+  "criadoEm": zod.coerce.date()
+})
+export const GetHistoricoNegocioResponse = zod.array(GetHistoricoNegocioResponseItem)
+
+

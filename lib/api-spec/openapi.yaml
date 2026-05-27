@@ -18,6 +18,8 @@ tags:
     description: Inbox conversation management
   - name: respostas-rapidas
     description: Quick reply management
+  - name: pipeline
+    description: Sales pipeline management
 paths:
   /healthz:
     get:
@@ -488,6 +490,227 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /pipeline/stats:
+    get:
+      operationId: getPipelineStats
+      tags: [pipeline]
+      summary: Get pipeline statistics per stage
+      responses:
+        "200":
+          description: Pipeline statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PipelineStats"
+
+  /pipeline/etapas:
+    get:
+      operationId: listEtapas
+      tags: [pipeline]
+      summary: List all pipeline stages
+      responses:
+        "200":
+          description: List of stages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EtapaPipeline"
+    post:
+      operationId: createEtapa
+      tags: [pipeline]
+      summary: Create a new stage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EtapaInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EtapaPipeline"
+
+  /pipeline/etapas/{id}:
+    put:
+      operationId: updateEtapa
+      tags: [pipeline]
+      summary: Update a stage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EtapaInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EtapaPipeline"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteEtapa
+      tags: [pipeline]
+      summary: Delete a stage (only if empty)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Stage has deals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pipeline/negocios:
+    get:
+      operationId: listNegocios
+      tags: [pipeline]
+      summary: List all deals
+      responses:
+        "200":
+          description: List of deals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Negocio"
+    post:
+      operationId: createNegocio
+      tags: [pipeline]
+      summary: Create a new deal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NegocioInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Negocio"
+
+  /pipeline/negocios/{id}:
+    get:
+      operationId: getNegocio
+      tags: [pipeline]
+      summary: Get a deal by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Deal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Negocio"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateNegocio
+      tags: [pipeline]
+      summary: Update a deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NegocioUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Negocio"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteNegocio
+      tags: [pipeline]
+      summary: Delete a deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pipeline/negocios/{id}/historico:
+    get:
+      operationId: getHistoricoNegocio
+      tags: [pipeline]
+      summary: Get movement history for a deal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Movement history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HistoricoMovimentacao"
+
 components:
   schemas:
     HealthStatus:
@@ -651,6 +874,132 @@ components:
           type: array
           items:
             type: string
+
+    Negocio:
+      type: object
+      required: [id, nome, valor, etapaId, etapaNome, etapaCor, status, criadoEm]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        valor:
+          type: number
+          format: double
+        contatoId:
+          type: ["integer", "null"]
+        contatoNome:
+          type: ["string", "null"]
+        responsavel:
+          type: ["string", "null"]
+        prazo:
+          type: ["string", "null"]
+        etapaId:
+          type: integer
+        etapaNome:
+          type: string
+        etapaCor:
+          type: string
+        status:
+          type: string
+          enum: [ativo, ganho, perdido]
+        criadoEm:
+          type: string
+          format: date-time
+
+    NegocioInput:
+      type: object
+      required: [nome, etapaId]
+      properties:
+        nome:
+          type: string
+          minLength: 1
+        valor:
+          type: number
+          default: 0
+        contatoId:
+          type: ["integer", "null"]
+        responsavel:
+          type: ["string", "null"]
+        prazo:
+          type: ["string", "null"]
+        etapaId:
+          type: integer
+
+    NegocioUpdate:
+      type: object
+      properties:
+        nome:
+          type: string
+          minLength: 1
+        valor:
+          type: number
+        contatoId:
+          type: ["integer", "null"]
+        responsavel:
+          type: ["string", "null"]
+        prazo:
+          type: ["string", "null"]
+        etapaId:
+          type: integer
+        status:
+          type: string
+          enum: [ativo, ganho, perdido]
+
+    EtapaPipeline:
+      type: object
+      required: [id, nome, ordem, cor, totalNegocios, totalValor]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        ordem:
+          type: integer
+        cor:
+          type: string
+        totalNegocios:
+          type: integer
+        totalValor:
+          type: number
+          format: double
+
+    EtapaInput:
+      type: object
+      required: [nome]
+      properties:
+        nome:
+          type: string
+          minLength: 1
+        ordem:
+          type: integer
+        cor:
+          type: string
+
+    PipelineStats:
+      type: object
+      required: [etapas]
+      properties:
+        etapas:
+          type: array
+          items:
+            $ref: "#/components/schemas/EtapaPipeline"
+
+    HistoricoMovimentacao:
+      type: object
+      required: [id, negocioId, etapaNova, criadoEm]
+      properties:
+        id:
+          type: integer
+        negocioId:
+          type: integer
+        etapaAnterior:
+          type: ["string", "null"]
+        etapaNova:
+          type: string
+        criadoEm:
+          type: string
+          format: date-time
 
     InboxConversation:
       type: object

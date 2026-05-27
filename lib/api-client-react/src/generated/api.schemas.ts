@@ -154,6 +154,99 @@ export interface ImportResult {
   erros: string[];
 }
 
+export type NegocioStatus = typeof NegocioStatus[keyof typeof NegocioStatus];
+
+
+export const NegocioStatus = {
+  ativo: 'ativo',
+  ganho: 'ganho',
+  perdido: 'perdido',
+} as const;
+
+export interface Negocio {
+  id: number;
+  nome: string;
+  valor: number;
+  /** @nullable */
+  contatoId?: number | null;
+  /** @nullable */
+  contatoNome?: string | null;
+  /** @nullable */
+  responsavel?: string | null;
+  /** @nullable */
+  prazo?: string | null;
+  etapaId: number;
+  etapaNome: string;
+  etapaCor: string;
+  status: NegocioStatus;
+  criadoEm: string;
+}
+
+export interface NegocioInput {
+  /** @minLength 1 */
+  nome: string;
+  valor?: number;
+  /** @nullable */
+  contatoId?: number | null;
+  /** @nullable */
+  responsavel?: string | null;
+  /** @nullable */
+  prazo?: string | null;
+  etapaId: number;
+}
+
+export type NegocioUpdateStatus = typeof NegocioUpdateStatus[keyof typeof NegocioUpdateStatus];
+
+
+export const NegocioUpdateStatus = {
+  ativo: 'ativo',
+  ganho: 'ganho',
+  perdido: 'perdido',
+} as const;
+
+export interface NegocioUpdate {
+  /** @minLength 1 */
+  nome?: string;
+  valor?: number;
+  /** @nullable */
+  contatoId?: number | null;
+  /** @nullable */
+  responsavel?: string | null;
+  /** @nullable */
+  prazo?: string | null;
+  etapaId?: number;
+  status?: NegocioUpdateStatus;
+}
+
+export interface EtapaPipeline {
+  id: number;
+  nome: string;
+  ordem: number;
+  cor: string;
+  totalNegocios: number;
+  totalValor: number;
+}
+
+export interface EtapaInput {
+  /** @minLength 1 */
+  nome: string;
+  ordem?: number;
+  cor?: string;
+}
+
+export interface PipelineStats {
+  etapas: EtapaPipeline[];
+}
+
+export interface HistoricoMovimentacao {
+  id: number;
+  negocioId: number;
+  /** @nullable */
+  etapaAnterior?: string | null;
+  etapaNova: string;
+  criadoEm: string;
+}
+
 export type InboxConversationCanal = typeof InboxConversationCanal[keyof typeof InboxConversationCanal];
 
 
