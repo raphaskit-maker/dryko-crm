@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, UserPlus } from "lucide-react";
+import { LayoutDashboard, Users, UserPlus, Inbox } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -9,6 +9,18 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { useGetInboxStats } from "@workspace/api-client-react";
+
+function InboxBadge() {
+  const { data } = useGetInboxStats();
+  const count = (data?.abertas ?? 0) + (data?.emAndamento ?? 0);
+  if (!count) return null;
+  return (
+    <span className="ml-auto bg-[#F4831F] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -46,6 +58,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <Link href="/contatos/novo">
                     <UserPlus className="w-4 h-4 mr-2" />
                     <span>Novo Contato</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.startsWith("/caixa-de-entrada")}>
+                  <Link href="/caixa-de-entrada">
+                    <Inbox className="w-4 h-4 mr-2" />
+                    <span>Caixa de Entrada</span>
+                    <InboxBadge />
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

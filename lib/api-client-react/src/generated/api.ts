@@ -30,7 +30,16 @@ import type {
   HealthStatus,
   ImportInput,
   ImportResult,
-  ListContactsParams
+  InboxConversation,
+  InboxConversationInput,
+  InboxConversationUpdate,
+  InboxStats,
+  ListContactsParams,
+  ListInboxParams,
+  Mensagem,
+  MensagemInput,
+  RespostaRapida,
+  RespostaRapidaInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -939,5 +948,753 @@ export const useDeleteConversation = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getDeleteConversationMutationOptions(options));
+    }
+
+export const getListInboxUrl = (params?: ListInboxParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/inbox?${stringifiedParams}` : `/api/inbox`
+}
+
+/**
+ * @summary List all inbox conversations
+ */
+export const listInbox = async (params?: ListInboxParams, options?: RequestInit): Promise<InboxConversation[]> => {
+
+  return customFetch<InboxConversation[]>(getListInboxUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListInboxQueryKey = (params?: ListInboxParams,) => {
+    return [
+    `/api/inbox`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListInboxQueryOptions = <TData = Awaited<ReturnType<typeof listInbox>>, TError = ErrorType<unknown>>(params?: ListInboxParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listInbox>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListInboxQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInbox>>> = ({ signal }) => listInbox(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInbox>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListInboxQueryResult = NonNullable<Awaited<ReturnType<typeof listInbox>>>
+export type ListInboxQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all inbox conversations
+ */
+
+export function useListInbox<TData = Awaited<ReturnType<typeof listInbox>>, TError = ErrorType<unknown>>(
+ params?: ListInboxParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listInbox>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListInboxQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateInboxConversationUrl = () => {
+
+
+
+
+  return `/api/inbox`
+}
+
+/**
+ * @summary Create a new inbox conversation
+ */
+export const createInboxConversation = async (inboxConversationInput: InboxConversationInput, options?: RequestInit): Promise<InboxConversation> => {
+
+  return customFetch<InboxConversation>(getCreateInboxConversationUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      inboxConversationInput,)
+  }
+);}
+
+
+
+
+export const getCreateInboxConversationMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInboxConversation>>, TError,{data: BodyType<InboxConversationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createInboxConversation>>, TError,{data: BodyType<InboxConversationInput>}, TContext> => {
+
+const mutationKey = ['createInboxConversation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInboxConversation>>, {data: BodyType<InboxConversationInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createInboxConversation(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateInboxConversationMutationResult = NonNullable<Awaited<ReturnType<typeof createInboxConversation>>>
+    export type CreateInboxConversationMutationBody = BodyType<InboxConversationInput>
+    export type CreateInboxConversationMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Create a new inbox conversation
+ */
+export const useCreateInboxConversation = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createInboxConversation>>, TError,{data: BodyType<InboxConversationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createInboxConversation>>,
+        TError,
+        {data: BodyType<InboxConversationInput>},
+        TContext
+      > => {
+      return useMutation(getCreateInboxConversationMutationOptions(options));
+    }
+
+export const getGetInboxStatsUrl = () => {
+
+
+
+
+  return `/api/inbox/stats`
+}
+
+/**
+ * @summary Get inbox statistics
+ */
+export const getInboxStats = async ( options?: RequestInit): Promise<InboxStats> => {
+
+  return customFetch<InboxStats>(getGetInboxStatsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetInboxStatsQueryKey = () => {
+    return [
+    `/api/inbox/stats`
+    ] as const;
+    }
+
+
+export const getGetInboxStatsQueryOptions = <TData = Awaited<ReturnType<typeof getInboxStats>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getInboxStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetInboxStatsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInboxStats>>> = ({ signal }) => getInboxStats({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInboxStats>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetInboxStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getInboxStats>>>
+export type GetInboxStatsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get inbox statistics
+ */
+
+export function useGetInboxStats<TData = Awaited<ReturnType<typeof getInboxStats>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getInboxStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetInboxStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetInboxConversationUrl = (id: number,) => {
+
+
+
+
+  return `/api/inbox/${id}`
+}
+
+/**
+ * @summary Get a single inbox conversation
+ */
+export const getInboxConversation = async (id: number, options?: RequestInit): Promise<InboxConversation> => {
+
+  return customFetch<InboxConversation>(getGetInboxConversationUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetInboxConversationQueryKey = (id: number,) => {
+    return [
+    `/api/inbox/${id}`
+    ] as const;
+    }
+
+
+export const getGetInboxConversationQueryOptions = <TData = Awaited<ReturnType<typeof getInboxConversation>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getInboxConversation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetInboxConversationQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInboxConversation>>> = ({ signal }) => getInboxConversation(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInboxConversation>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetInboxConversationQueryResult = NonNullable<Awaited<ReturnType<typeof getInboxConversation>>>
+export type GetInboxConversationQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a single inbox conversation
+ */
+
+export function useGetInboxConversation<TData = Awaited<ReturnType<typeof getInboxConversation>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getInboxConversation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetInboxConversationQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateInboxConversationUrl = (id: number,) => {
+
+
+
+
+  return `/api/inbox/${id}`
+}
+
+/**
+ * @summary Update inbox conversation status or classification
+ */
+export const updateInboxConversation = async (id: number,
+    inboxConversationUpdate: InboxConversationUpdate, options?: RequestInit): Promise<InboxConversation> => {
+
+  return customFetch<InboxConversation>(getUpdateInboxConversationUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      inboxConversationUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateInboxConversationMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateInboxConversation>>, TError,{id: number;data: BodyType<InboxConversationUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateInboxConversation>>, TError,{id: number;data: BodyType<InboxConversationUpdate>}, TContext> => {
+
+const mutationKey = ['updateInboxConversation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateInboxConversation>>, {id: number;data: BodyType<InboxConversationUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateInboxConversation(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateInboxConversationMutationResult = NonNullable<Awaited<ReturnType<typeof updateInboxConversation>>>
+    export type UpdateInboxConversationMutationBody = BodyType<InboxConversationUpdate>
+    export type UpdateInboxConversationMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Update inbox conversation status or classification
+ */
+export const useUpdateInboxConversation = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateInboxConversation>>, TError,{id: number;data: BodyType<InboxConversationUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateInboxConversation>>,
+        TError,
+        {id: number;data: BodyType<InboxConversationUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateInboxConversationMutationOptions(options));
+    }
+
+export const getListMensagensUrl = (id: number,) => {
+
+
+
+
+  return `/api/inbox/${id}/mensagens`
+}
+
+/**
+ * @summary List messages in an inbox conversation
+ */
+export const listMensagens = async (id: number, options?: RequestInit): Promise<Mensagem[]> => {
+
+  return customFetch<Mensagem[]>(getListMensagensUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMensagensQueryKey = (id: number,) => {
+    return [
+    `/api/inbox/${id}/mensagens`
+    ] as const;
+    }
+
+
+export const getListMensagensQueryOptions = <TData = Awaited<ReturnType<typeof listMensagens>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMensagens>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMensagensQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMensagens>>> = ({ signal }) => listMensagens(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMensagens>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMensagensQueryResult = NonNullable<Awaited<ReturnType<typeof listMensagens>>>
+export type ListMensagensQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List messages in an inbox conversation
+ */
+
+export function useListMensagens<TData = Awaited<ReturnType<typeof listMensagens>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMensagens>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMensagensQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getSendMensagemUrl = (id: number,) => {
+
+
+
+
+  return `/api/inbox/${id}/mensagens`
+}
+
+/**
+ * @summary Send a message in an inbox conversation
+ */
+export const sendMensagem = async (id: number,
+    mensagemInput: MensagemInput, options?: RequestInit): Promise<Mensagem> => {
+
+  return customFetch<Mensagem>(getSendMensagemUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      mensagemInput,)
+  }
+);}
+
+
+
+
+export const getSendMensagemMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendMensagem>>, TError,{id: number;data: BodyType<MensagemInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendMensagem>>, TError,{id: number;data: BodyType<MensagemInput>}, TContext> => {
+
+const mutationKey = ['sendMensagem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendMensagem>>, {id: number;data: BodyType<MensagemInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  sendMensagem(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendMensagemMutationResult = NonNullable<Awaited<ReturnType<typeof sendMensagem>>>
+    export type SendMensagemMutationBody = BodyType<MensagemInput>
+    export type SendMensagemMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Send a message in an inbox conversation
+ */
+export const useSendMensagem = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendMensagem>>, TError,{id: number;data: BodyType<MensagemInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof sendMensagem>>,
+        TError,
+        {id: number;data: BodyType<MensagemInput>},
+        TContext
+      > => {
+      return useMutation(getSendMensagemMutationOptions(options));
+    }
+
+export const getListRespostasRapidasUrl = () => {
+
+
+
+
+  return `/api/respostas-rapidas`
+}
+
+/**
+ * @summary List all quick replies
+ */
+export const listRespostasRapidas = async ( options?: RequestInit): Promise<RespostaRapida[]> => {
+
+  return customFetch<RespostaRapida[]>(getListRespostasRapidasUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListRespostasRapidasQueryKey = () => {
+    return [
+    `/api/respostas-rapidas`
+    ] as const;
+    }
+
+
+export const getListRespostasRapidasQueryOptions = <TData = Awaited<ReturnType<typeof listRespostasRapidas>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRespostasRapidas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListRespostasRapidasQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listRespostasRapidas>>> = ({ signal }) => listRespostasRapidas({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listRespostasRapidas>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListRespostasRapidasQueryResult = NonNullable<Awaited<ReturnType<typeof listRespostasRapidas>>>
+export type ListRespostasRapidasQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all quick replies
+ */
+
+export function useListRespostasRapidas<TData = Awaited<ReturnType<typeof listRespostasRapidas>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRespostasRapidas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListRespostasRapidasQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateRespostaRapidaUrl = () => {
+
+
+
+
+  return `/api/respostas-rapidas`
+}
+
+/**
+ * @summary Create a quick reply
+ */
+export const createRespostaRapida = async (respostaRapidaInput: RespostaRapidaInput, options?: RequestInit): Promise<RespostaRapida> => {
+
+  return customFetch<RespostaRapida>(getCreateRespostaRapidaUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      respostaRapidaInput,)
+  }
+);}
+
+
+
+
+export const getCreateRespostaRapidaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRespostaRapida>>, TError,{data: BodyType<RespostaRapidaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createRespostaRapida>>, TError,{data: BodyType<RespostaRapidaInput>}, TContext> => {
+
+const mutationKey = ['createRespostaRapida'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createRespostaRapida>>, {data: BodyType<RespostaRapidaInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createRespostaRapida(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateRespostaRapidaMutationResult = NonNullable<Awaited<ReturnType<typeof createRespostaRapida>>>
+    export type CreateRespostaRapidaMutationBody = BodyType<RespostaRapidaInput>
+    export type CreateRespostaRapidaMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a quick reply
+ */
+export const useCreateRespostaRapida = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createRespostaRapida>>, TError,{data: BodyType<RespostaRapidaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createRespostaRapida>>,
+        TError,
+        {data: BodyType<RespostaRapidaInput>},
+        TContext
+      > => {
+      return useMutation(getCreateRespostaRapidaMutationOptions(options));
+    }
+
+export const getDeleteRespostaRapidaUrl = (id: number,) => {
+
+
+
+
+  return `/api/respostas-rapidas/${id}`
+}
+
+/**
+ * @summary Delete a quick reply
+ */
+export const deleteRespostaRapida = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteRespostaRapidaUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteRespostaRapidaMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRespostaRapida>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteRespostaRapida>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteRespostaRapida'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteRespostaRapida>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteRespostaRapida(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteRespostaRapidaMutationResult = NonNullable<Awaited<ReturnType<typeof deleteRespostaRapida>>>
+
+    export type DeleteRespostaRapidaMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Delete a quick reply
+ */
+export const useDeleteRespostaRapida = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRespostaRapida>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteRespostaRapida>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteRespostaRapidaMutationOptions(options));
     }
 

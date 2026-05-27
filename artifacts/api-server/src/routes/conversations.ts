@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { pool, rowToConversation } from "../lib/db";
+import { pool, rowToInteracao } from "../lib/db";
 import {
   ListConversationsParams,
   CreateConversationParams,
@@ -17,11 +17,11 @@ router.get("/contacts/:id/conversations", async (req, res): Promise<void> => {
   }
 
   const { rows } = await pool.query(
-    "SELECT * FROM conversas WHERE contato_id = $1 ORDER BY criado_em ASC",
+    "SELECT * FROM interacoes WHERE contato_id = $1 ORDER BY criado_em ASC",
     [params.data.id]
   );
 
-  res.json(rows.map((r: Record<string, unknown>) => rowToConversation(r)));
+  res.json(rows.map((r: Record<string, unknown>) => rowToInteracao(r)));
 });
 
 router.post("/contacts/:id/conversations", async (req, res): Promise<void> => {
@@ -46,11 +46,11 @@ router.post("/contacts/:id/conversations", async (req, res): Promise<void> => {
   const { conteudo, canal, direcao } = parsed.data;
 
   const { rows } = await pool.query(
-    `INSERT INTO conversas (contato_id, conteudo, canal, direcao)
+    `INSERT INTO interacoes (contato_id, conteudo, canal, direcao)
      VALUES ($1,$2,$3,$4) RETURNING *`,
     [params.data.id, conteudo, canal, direcao]
   );
-  res.status(201).json(rowToConversation(rows[0] as Record<string, unknown>));
+  res.status(201).json(rowToInteracao(rows[0] as Record<string, unknown>));
 });
 
 router.delete("/conversations/:id", async (req, res): Promise<void> => {
@@ -60,13 +60,13 @@ router.delete("/conversations/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const { rows } = await pool.query("SELECT id FROM conversas WHERE id = $1", [params.data.id]);
+  const { rows } = await pool.query("SELECT id FROM interacoes WHERE id = $1", [params.data.id]);
   if (rows.length === 0) {
-    res.status(404).json({ error: "Conversa não encontrada" });
+    res.status(404).json({ error: "Interação não encontrada" });
     return;
   }
 
-  await pool.query("DELETE FROM conversas WHERE id = $1", [params.data.id]);
+  await pool.query("DELETE FROM interacoes WHERE id = $1", [params.data.id]);
   res.sendStatus(204);
 });
 

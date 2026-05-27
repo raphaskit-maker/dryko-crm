@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { CSVImportDialog } from "@/components/csv-import-dialog";
 import { ContactSidePanel } from "@/components/contact-side-panel";
-import type { ListContactsCanal } from "@workspace/api-client-react/src/generated/api.schemas";
+import type { ListContactsCanal } from "@workspace/api-client-react";
 
 export default function Contacts() {
   const [, setLocation] = useLocation();

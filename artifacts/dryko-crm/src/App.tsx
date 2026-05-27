@@ -6,6 +6,7 @@ import { AppLayout } from "@/components/layout";
 import Dashboard from "@/pages/dashboard";
 import Contacts from "@/pages/contacts";
 import NewContact from "@/pages/new-contact";
+import Inbox from "@/pages/inbox";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -18,6 +19,7 @@ function Router() {
         <Route path="/contatos/novo" component={NewContact} />
         <Route path="/contatos/:id" component={Contacts} />
         <Route path="/contatos" component={Contacts} />
+        <Route path="/caixa-de-entrada" component={Inbox} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

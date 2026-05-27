@@ -46,7 +46,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Phone, Mail, MessageCircle, Instagram, Edit2, Check, X, Trash2, ArrowUpRight, ArrowDownLeft } from "lucide-react";
-import type { ContactUpdateCanal } from "@workspace/api-client-react/src/generated/api.schemas";
+import type { ContactUpdateCanal } from "@workspace/api-client-react";
 
 interface ContactSidePanelProps {
   contactId?: number;

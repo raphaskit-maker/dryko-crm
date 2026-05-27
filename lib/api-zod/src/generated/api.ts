@@ -204,3 +204,167 @@ export const DeleteConversationParams = zod.object({
 })
 
 
+/**
+ * @summary List all inbox conversations
+ */
+export const ListInboxQueryParams = zod.object({
+  "status": zod.enum(['aberta', 'em_andamento', 'resolvida']).optional(),
+  "canal": zod.enum(['whatsapp', 'email', 'instagram', 'telefone']).optional()
+})
+
+export const ListInboxResponseItem = zod.object({
+  "id": zod.number(),
+  "contatoId": zod.number(),
+  "contatoNome": zod.string(),
+  "contatoTelefone": zod.string().optional(),
+  "canal": zod.enum(['whatsapp', 'email', 'instagram', 'telefone']),
+  "status": zod.enum(['aberta', 'em_andamento', 'resolvida']),
+  "atendente": zod.string().nullish(),
+  "criadoEm": zod.coerce.date(),
+  "encerradoEm": zod.string().nullish(),
+  "classificacao": zod.string().nullish(),
+  "ultimaMensagem": zod.string().nullish(),
+  "totalMensagens": zod.number()
+})
+export const ListInboxResponse = zod.array(ListInboxResponseItem)
+
+
+/**
+ * @summary Create a new inbox conversation
+ */
+export const CreateInboxConversationBody = zod.object({
+  "contatoId": zod.number(),
+  "canal": zod.enum(['whatsapp', 'email', 'instagram', 'telefone']),
+  "atendente": zod.string().nullish()
+})
+
+
+/**
+ * @summary Get inbox statistics
+ */
+export const GetInboxStatsResponse = zod.object({
+  "abertas": zod.number(),
+  "emAndamento": zod.number(),
+  "resolvidas": zod.number(),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Get a single inbox conversation
+ */
+export const GetInboxConversationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetInboxConversationResponse = zod.object({
+  "id": zod.number(),
+  "contatoId": zod.number(),
+  "contatoNome": zod.string(),
+  "contatoTelefone": zod.string().optional(),
+  "canal": zod.enum(['whatsapp', 'email', 'instagram', 'telefone']),
+  "status": zod.enum(['aberta', 'em_andamento', 'resolvida']),
+  "atendente": zod.string().nullish(),
+  "criadoEm": zod.coerce.date(),
+  "encerradoEm": zod.string().nullish(),
+  "classificacao": zod.string().nullish(),
+  "ultimaMensagem": zod.string().nullish(),
+  "totalMensagens": zod.number()
+})
+
+
+/**
+ * @summary Update inbox conversation status or classification
+ */
+export const UpdateInboxConversationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateInboxConversationBody = zod.object({
+  "status": zod.enum(['aberta', 'em_andamento', 'resolvida']).optional(),
+  "atendente": zod.string().nullish(),
+  "classificacao": zod.string().nullish()
+})
+
+export const UpdateInboxConversationResponse = zod.object({
+  "id": zod.number(),
+  "contatoId": zod.number(),
+  "contatoNome": zod.string(),
+  "contatoTelefone": zod.string().optional(),
+  "canal": zod.enum(['whatsapp', 'email', 'instagram', 'telefone']),
+  "status": zod.enum(['aberta', 'em_andamento', 'resolvida']),
+  "atendente": zod.string().nullish(),
+  "criadoEm": zod.coerce.date(),
+  "encerradoEm": zod.string().nullish(),
+  "classificacao": zod.string().nullish(),
+  "ultimaMensagem": zod.string().nullish(),
+  "totalMensagens": zod.number()
+})
+
+
+/**
+ * @summary List messages in an inbox conversation
+ */
+export const ListMensagensParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListMensagensResponseItem = zod.object({
+  "id": zod.number(),
+  "conversaId": zod.number(),
+  "texto": zod.string(),
+  "autor": zod.string(),
+  "criadoEm": zod.coerce.date()
+})
+export const ListMensagensResponse = zod.array(ListMensagensResponseItem)
+
+
+/**
+ * @summary Send a message in an inbox conversation
+ */
+export const SendMensagemParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+
+export const SendMensagemBody = zod.object({
+  "texto": zod.string().min(1),
+  "autor": zod.string().min(1)
+})
+
+
+/**
+ * @summary List all quick replies
+ */
+export const ListRespostasRapidasResponseItem = zod.object({
+  "id": zod.number(),
+  "titulo": zod.string(),
+  "texto": zod.string()
+})
+export const ListRespostasRapidasResponse = zod.array(ListRespostasRapidasResponseItem)
+
+
+/**
+ * @summary Create a quick reply
+ */
+
+
+
+
+export const CreateRespostaRapidaBody = zod.object({
+  "titulo": zod.string().min(1),
+  "texto": zod.string().min(1)
+})
+
+
+/**
+ * @summary Delete a quick reply
+ */
+export const DeleteRespostaRapidaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+

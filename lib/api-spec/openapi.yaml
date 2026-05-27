@@ -14,6 +14,10 @@ tags:
     description: Contact management
   - name: conversations
     description: Conversation history
+  - name: inbox
+    description: Inbox conversation management
+  - name: respostas-rapidas
+    description: Quick reply management
 paths:
   /healthz:
     get:
@@ -270,6 +274,220 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /inbox:
+    get:
+      operationId: listInbox
+      tags: [inbox]
+      summary: List all inbox conversations
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [aberta, em_andamento, resolvida]
+        - name: canal
+          in: query
+          schema:
+            type: string
+            enum: [whatsapp, email, instagram, telefone]
+      responses:
+        "200":
+          description: List of inbox conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InboxConversation"
+    post:
+      operationId: createInboxConversation
+      tags: [inbox]
+      summary: Create a new inbox conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InboxConversationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InboxConversation"
+        "404":
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /inbox/stats:
+    get:
+      operationId: getInboxStats
+      tags: [inbox]
+      summary: Get inbox statistics
+      responses:
+        "200":
+          description: Inbox statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InboxStats"
+
+  /inbox/{id}:
+    get:
+      operationId: getInboxConversation
+      tags: [inbox]
+      summary: Get a single inbox conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Inbox conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InboxConversation"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateInboxConversation
+      tags: [inbox]
+      summary: Update inbox conversation status or classification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InboxConversationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InboxConversation"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /inbox/{id}/mensagens:
+    get:
+      operationId: listMensagens
+      tags: [inbox]
+      summary: List messages in an inbox conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Mensagem"
+    post:
+      operationId: sendMensagem
+      tags: [inbox]
+      summary: Send a message in an inbox conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MensagemInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mensagem"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /respostas-rapidas:
+    get:
+      operationId: listRespostasRapidas
+      tags: [respostas-rapidas]
+      summary: List all quick replies
+      responses:
+        "200":
+          description: Quick replies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RespostaRapida"
+    post:
+      operationId: createRespostaRapida
+      tags: [respostas-rapidas]
+      summary: Create a quick reply
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RespostaRapidaInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RespostaRapida"
+
+  /respostas-rapidas/{id}:
+    delete:
+      operationId: deleteRespostaRapida
+      tags: [respostas-rapidas]
+      summary: Delete a quick reply
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -433,3 +651,120 @@ components:
           type: array
           items:
             type: string
+
+    InboxConversation:
+      type: object
+      required: [id, contatoId, contatoNome, canal, status, criadoEm, totalMensagens]
+      properties:
+        id:
+          type: integer
+        contatoId:
+          type: integer
+        contatoNome:
+          type: string
+        contatoTelefone:
+          type: string
+        canal:
+          type: string
+          enum: [whatsapp, email, instagram, telefone]
+        status:
+          type: string
+          enum: [aberta, em_andamento, resolvida]
+        atendente:
+          type: ["string", "null"]
+        criadoEm:
+          type: string
+          format: date-time
+        encerradoEm:
+          type: ["string", "null"]
+        classificacao:
+          type: ["string", "null"]
+        ultimaMensagem:
+          type: ["string", "null"]
+        totalMensagens:
+          type: integer
+
+    InboxConversationInput:
+      type: object
+      required: [contatoId, canal]
+      properties:
+        contatoId:
+          type: integer
+        canal:
+          type: string
+          enum: [whatsapp, email, instagram, telefone]
+        atendente:
+          type: ["string", "null"]
+
+    InboxConversationUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [aberta, em_andamento, resolvida]
+        atendente:
+          type: ["string", "null"]
+        classificacao:
+          type: ["string", "null"]
+
+    InboxStats:
+      type: object
+      required: [abertas, emAndamento, resolvidas, total]
+      properties:
+        abertas:
+          type: integer
+        emAndamento:
+          type: integer
+        resolvidas:
+          type: integer
+        total:
+          type: integer
+
+    Mensagem:
+      type: object
+      required: [id, conversaId, texto, autor, criadoEm]
+      properties:
+        id:
+          type: integer
+        conversaId:
+          type: integer
+        texto:
+          type: string
+        autor:
+          type: string
+        criadoEm:
+          type: string
+          format: date-time
+
+    MensagemInput:
+      type: object
+      required: [texto, autor]
+      properties:
+        texto:
+          type: string
+          minLength: 1
+        autor:
+          type: string
+          minLength: 1
+
+    RespostaRapida:
+      type: object
+      required: [id, titulo, texto]
+      properties:
+        id:
+          type: integer
+        titulo:
+          type: string
+        texto:
+          type: string
+
+    RespostaRapidaInput:
+      type: object
+      required: [titulo, texto]
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+        texto:
+          type: string
+          minLength: 1

@@ -154,6 +154,113 @@ export interface ImportResult {
   erros: string[];
 }
 
+export type InboxConversationCanal = typeof InboxConversationCanal[keyof typeof InboxConversationCanal];
+
+
+export const InboxConversationCanal = {
+  whatsapp: 'whatsapp',
+  email: 'email',
+  instagram: 'instagram',
+  telefone: 'telefone',
+} as const;
+
+export type InboxConversationStatus = typeof InboxConversationStatus[keyof typeof InboxConversationStatus];
+
+
+export const InboxConversationStatus = {
+  aberta: 'aberta',
+  em_andamento: 'em_andamento',
+  resolvida: 'resolvida',
+} as const;
+
+export interface InboxConversation {
+  id: number;
+  contatoId: number;
+  contatoNome: string;
+  contatoTelefone?: string;
+  canal: InboxConversationCanal;
+  status: InboxConversationStatus;
+  /** @nullable */
+  atendente?: string | null;
+  criadoEm: string;
+  /** @nullable */
+  encerradoEm?: string | null;
+  /** @nullable */
+  classificacao?: string | null;
+  /** @nullable */
+  ultimaMensagem?: string | null;
+  totalMensagens: number;
+}
+
+export type InboxConversationInputCanal = typeof InboxConversationInputCanal[keyof typeof InboxConversationInputCanal];
+
+
+export const InboxConversationInputCanal = {
+  whatsapp: 'whatsapp',
+  email: 'email',
+  instagram: 'instagram',
+  telefone: 'telefone',
+} as const;
+
+export interface InboxConversationInput {
+  contatoId: number;
+  canal: InboxConversationInputCanal;
+  /** @nullable */
+  atendente?: string | null;
+}
+
+export type InboxConversationUpdateStatus = typeof InboxConversationUpdateStatus[keyof typeof InboxConversationUpdateStatus];
+
+
+export const InboxConversationUpdateStatus = {
+  aberta: 'aberta',
+  em_andamento: 'em_andamento',
+  resolvida: 'resolvida',
+} as const;
+
+export interface InboxConversationUpdate {
+  status?: InboxConversationUpdateStatus;
+  /** @nullable */
+  atendente?: string | null;
+  /** @nullable */
+  classificacao?: string | null;
+}
+
+export interface InboxStats {
+  abertas: number;
+  emAndamento: number;
+  resolvidas: number;
+  total: number;
+}
+
+export interface Mensagem {
+  id: number;
+  conversaId: number;
+  texto: string;
+  autor: string;
+  criadoEm: string;
+}
+
+export interface MensagemInput {
+  /** @minLength 1 */
+  texto: string;
+  /** @minLength 1 */
+  autor: string;
+}
+
+export interface RespostaRapida {
+  id: number;
+  titulo: string;
+  texto: string;
+}
+
+export interface RespostaRapidaInput {
+  /** @minLength 1 */
+  titulo: string;
+  /** @minLength 1 */
+  texto: string;
+}
+
 export type ListContactsParams = {
 search?: string;
 tag?: string;
@@ -164,6 +271,30 @@ export type ListContactsCanal = typeof ListContactsCanal[keyof typeof ListContac
 
 
 export const ListContactsCanal = {
+  whatsapp: 'whatsapp',
+  email: 'email',
+  instagram: 'instagram',
+  telefone: 'telefone',
+} as const;
+
+export type ListInboxParams = {
+status?: ListInboxStatus;
+canal?: ListInboxCanal;
+};
+
+export type ListInboxStatus = typeof ListInboxStatus[keyof typeof ListInboxStatus];
+
+
+export const ListInboxStatus = {
+  aberta: 'aberta',
+  em_andamento: 'em_andamento',
+  resolvida: 'resolvida',
+} as const;
+
+export type ListInboxCanal = typeof ListInboxCanal[keyof typeof ListInboxCanal];
+
+
+export const ListInboxCanal = {
   whatsapp: 'whatsapp',
   email: 'email',
   instagram: 'instagram',
