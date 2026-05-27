@@ -20,6 +20,8 @@ tags:
     description: Quick reply management
   - name: pipeline
     description: Sales pipeline management
+  - name: tarefas
+    description: Task management
 paths:
   /healthz:
     get:
@@ -475,6 +477,128 @@ paths:
       operationId: deleteRespostaRapida
       tags: [respostas-rapidas]
       summary: Delete a quick reply
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tarefas/stats:
+    get:
+      operationId: getTarefasStats
+      tags: [tarefas]
+      summary: Get task stats (pending today count)
+      responses:
+        "200":
+          description: Task statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TarefaStats"
+
+  /tarefas:
+    get:
+      operationId: listTarefas
+      tags: [tarefas]
+      summary: List all tasks
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [pendente, concluida] }
+        - name: prioridade
+          in: query
+          schema: { type: string, enum: [alta, media, baixa] }
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tarefa"
+    post:
+      operationId: createTarefa
+      tags: [tarefas]
+      summary: Create a new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TarefaInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tarefa"
+
+  /tarefas/{id}:
+    get:
+      operationId: getTarefa
+      tags: [tarefas]
+      summary: Get a task by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tarefa"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateTarefa
+      tags: [tarefas]
+      summary: Update a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TarefaUpdate"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tarefa"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteTarefa
+      tags: [tarefas]
+      summary: Delete a task
       parameters:
         - name: id
           in: path
@@ -984,6 +1108,91 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/EtapaPipeline"
+
+    Tarefa:
+      type: object
+      required: [id, titulo, dataHora, prioridade, status, criadoEm]
+      properties:
+        id:
+          type: integer
+        titulo:
+          type: string
+        descricao:
+          type: ["string", "null"]
+        contatoId:
+          type: ["integer", "null"]
+        contatoNome:
+          type: ["string", "null"]
+        responsavel:
+          type: ["string", "null"]
+        dataHora:
+          type: string
+          format: date-time
+        prioridade:
+          type: string
+          enum: [alta, media, baixa]
+        status:
+          type: string
+          enum: [pendente, concluida]
+        criadoEm:
+          type: string
+          format: date-time
+
+    TarefaInput:
+      type: object
+      required: [titulo, dataHora, prioridade]
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+        descricao:
+          type: ["string", "null"]
+        contatoId:
+          type: ["integer", "null"]
+        responsavel:
+          type: ["string", "null"]
+        dataHora:
+          type: string
+          format: date-time
+        prioridade:
+          type: string
+          enum: [alta, media, baixa]
+        status:
+          type: string
+          enum: [pendente, concluida]
+
+    TarefaUpdate:
+      type: object
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+        descricao:
+          type: ["string", "null"]
+        contatoId:
+          type: ["integer", "null"]
+        responsavel:
+          type: ["string", "null"]
+        dataHora:
+          type: string
+          format: date-time
+        prioridade:
+          type: string
+          enum: [alta, media, baixa]
+        status:
+          type: string
+          enum: [pendente, concluida]
+
+    TarefaStats:
+      type: object
+      required: [pendentesHoje, pendentesTotal, vencidas]
+      properties:
+        pendentesHoje:
+          type: integer
+        pendentesTotal:
+          type: integer
+        vencidas:
+          type: integer
 
     HistoricoMovimentacao:
       type: object

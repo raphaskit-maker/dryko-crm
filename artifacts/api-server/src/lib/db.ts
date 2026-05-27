@@ -69,6 +69,22 @@ export async function initDb() {
       texto TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS tarefas (
+      id SERIAL PRIMARY KEY,
+      titulo TEXT NOT NULL,
+      descricao TEXT,
+      contato_id INTEGER REFERENCES contatos(id) ON DELETE SET NULL,
+      responsavel TEXT,
+      data_hora TIMESTAMPTZ NOT NULL,
+      prioridade TEXT NOT NULL DEFAULT 'media' CHECK (prioridade IN ('alta', 'media', 'baixa')),
+      status TEXT NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente', 'concluida')),
+      criado_em TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_tarefas_status ON tarefas(status);
+    CREATE INDEX IF NOT EXISTS idx_tarefas_data_hora ON tarefas(data_hora);
+    CREATE INDEX IF NOT EXISTS idx_tarefas_contato ON tarefas(contato_id);
+
     CREATE TABLE IF NOT EXISTS etapas_pipeline (
       id SERIAL PRIMARY KEY,
       nome TEXT NOT NULL,
@@ -123,7 +139,10 @@ async function seedInitialData() {
   const { rows: etapaCount } = await pool.query("SELECT COUNT(*) AS c FROM etapas_pipeline");
   const needsPipeline = parseInt(etapaCount[0].c) === 0;
 
-  if (!needsContatos && !needsInbox && !needsRR && !needsPipeline) return;
+  const { rows: tarefaCount } = await pool.query("SELECT COUNT(*) AS c FROM tarefas");
+  const needsTarefas = parseInt(tarefaCount[0].c) === 0;
+
+  if (!needsContatos && !needsInbox && !needsRR && !needsPipeline && !needsTarefas) return;
 
   let c1id: number, c2id: number, c3id: number;
 
@@ -220,6 +239,42 @@ async function seedInitialData() {
       ["Agendamento de visita", "Podemos agendar uma visita técnica gratuita. Qual o melhor dia e horário para você?"]);
     await pool.query("INSERT INTO respostas_rapidas (titulo, texto) VALUES ($1,$2)",
       ["Encerramento", "Obrigado pelo contato! Estamos à disposição caso precise de mais informações. Até logo!"]);
+  }
+
+  if (needsTarefas) {
+    const { rows: allContatos } = await pool.query("SELECT id FROM contatos ORDER BY id LIMIT 3");
+    const tc1 = allContatos[0]?.id ?? null;
+    const tc2 = allContatos[1]?.id ?? null;
+    const tc3 = allContatos[2]?.id ?? null;
+
+    const agora = new Date();
+    const hoje = new Date(agora); hoje.setHours(10, 0, 0, 0);
+    const hojeNoite = new Date(agora); hojeNoite.setHours(17, 30, 0, 0);
+    const amanha = new Date(agora); amanha.setDate(agora.getDate() + 1); amanha.setHours(9, 0, 0, 0);
+    const em3dias = new Date(agora); em3dias.setDate(agora.getDate() + 3); em3dias.setHours(14, 0, 0, 0);
+    const em5dias = new Date(agora); em5dias.setDate(agora.getDate() + 5); em5dias.setHours(11, 0, 0, 0);
+    const ontem = new Date(agora); ontem.setDate(agora.getDate() - 1); ontem.setHours(16, 0, 0, 0);
+
+    await pool.query(
+      `INSERT INTO tarefas (titulo, descricao, contato_id, responsavel, data_hora, prioridade, status) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      ["Ligar para Carlos — confirmar orçamento", "Confirmar os valores do orçamento de impermeabilização de laje e verificar se há alguma dúvida.", tc1, "João Silva", hoje.toISOString(), "alta", "pendente"]
+    );
+    await pool.query(
+      `INSERT INTO tarefas (titulo, descricao, contato_id, responsavel, data_hora, prioridade, status) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      ["Enviar proposta revisada para Ana Paula", "Reenviar proposta com desconto de 5% conforme acordado na última reunião.", tc2, "Maria Costa", hojeNoite.toISOString(), "media", "pendente"]
+    );
+    await pool.query(
+      `INSERT INTO tarefas (titulo, descricao, contato_id, responsavel, data_hora, prioridade, status) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      ["Visita técnica — Residência Silva", "Realizar vistoria no imóvel para levantamento da área a ser impermeabilizada.", tc3, "João Silva", em3dias.toISOString(), "alta", "pendente"]
+    );
+    await pool.query(
+      `INSERT INTO tarefas (titulo, descricao, contato_id, responsavel, data_hora, prioridade, status) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      ["Follow-up pós-proposta Roberto Lima", "Verificar se Roberto recebeu o orçamento e se tem interesse em prosseguir.", tc1, "Maria Costa", ontem.toISOString(), "media", "pendente"]
+    );
+    await pool.query(
+      `INSERT INTO tarefas (titulo, descricao, contato_id, responsavel, data_hora, prioridade, status) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      ["Agendar reunião com equipe técnica", "Alinhar cronograma de execução dos projetos em andamento para o próximo mês.", null, "João Silva", em5dias.toISOString(), "baixa", "concluida"]
+    );
   }
 
   if (needsPipeline) {

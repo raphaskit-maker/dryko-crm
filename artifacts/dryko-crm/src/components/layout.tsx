@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, UserPlus, Inbox, KanbanSquare } from "lucide-react";
+import { LayoutDashboard, Users, UserPlus, Inbox, KanbanSquare, CheckSquare } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -9,7 +9,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { useGetInboxStats } from "@workspace/api-client-react";
+import { useGetInboxStats, useGetTarefasStats } from "@workspace/api-client-react";
 
 function InboxBadge() {
   const { data } = useGetInboxStats();
@@ -17,6 +17,17 @@ function InboxBadge() {
   if (!count) return null;
   return (
     <span className="ml-auto bg-[#F4831F] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
+
+function TarefasBadge() {
+  const { data } = useGetTarefasStats();
+  const count = (data?.pendentesHoje ?? 0) + (data?.vencidas ?? 0);
+  if (!count) return null;
+  return (
+    <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
       {count > 99 ? "99+" : count}
     </span>
   );
@@ -75,6 +86,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <Link href="/pipeline">
                     <KanbanSquare className="w-4 h-4 mr-2" />
                     <span>Pipeline</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.startsWith("/tarefas")}>
+                  <Link href="/tarefas">
+                    <CheckSquare className="w-4 h-4 mr-2" />
+                    <span>Tarefas</span>
+                    <TarefasBadge />
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

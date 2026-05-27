@@ -369,6 +369,119 @@ export const DeleteRespostaRapidaParams = zod.object({
 
 
 /**
+ * @summary Get task stats (pending today count)
+ */
+export const GetTarefasStatsResponse = zod.object({
+  "pendentesHoje": zod.number(),
+  "pendentesTotal": zod.number(),
+  "vencidas": zod.number()
+})
+
+
+/**
+ * @summary List all tasks
+ */
+export const ListTarefasQueryParams = zod.object({
+  "status": zod.enum(['pendente', 'concluida']).optional(),
+  "prioridade": zod.enum(['alta', 'media', 'baixa']).optional()
+})
+
+export const ListTarefasResponseItem = zod.object({
+  "id": zod.number(),
+  "titulo": zod.string(),
+  "descricao": zod.string().nullish(),
+  "contatoId": zod.number().nullish(),
+  "contatoNome": zod.string().nullish(),
+  "responsavel": zod.string().nullish(),
+  "dataHora": zod.coerce.date(),
+  "prioridade": zod.enum(['alta', 'media', 'baixa']),
+  "status": zod.enum(['pendente', 'concluida']),
+  "criadoEm": zod.coerce.date()
+})
+export const ListTarefasResponse = zod.array(ListTarefasResponseItem)
+
+
+/**
+ * @summary Create a new task
+ */
+
+
+
+export const CreateTarefaBody = zod.object({
+  "titulo": zod.string().min(1),
+  "descricao": zod.string().nullish(),
+  "contatoId": zod.number().nullish(),
+  "responsavel": zod.string().nullish(),
+  "dataHora": zod.coerce.date(),
+  "prioridade": zod.enum(['alta', 'media', 'baixa']),
+  "status": zod.enum(['pendente', 'concluida']).optional()
+})
+
+
+/**
+ * @summary Get a task by ID
+ */
+export const GetTarefaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetTarefaResponse = zod.object({
+  "id": zod.number(),
+  "titulo": zod.string(),
+  "descricao": zod.string().nullish(),
+  "contatoId": zod.number().nullish(),
+  "contatoNome": zod.string().nullish(),
+  "responsavel": zod.string().nullish(),
+  "dataHora": zod.coerce.date(),
+  "prioridade": zod.enum(['alta', 'media', 'baixa']),
+  "status": zod.enum(['pendente', 'concluida']),
+  "criadoEm": zod.coerce.date()
+})
+
+
+/**
+ * @summary Update a task
+ */
+export const UpdateTarefaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateTarefaBody = zod.object({
+  "titulo": zod.string().min(1).optional(),
+  "descricao": zod.string().nullish(),
+  "contatoId": zod.number().nullish(),
+  "responsavel": zod.string().nullish(),
+  "dataHora": zod.coerce.date().optional(),
+  "prioridade": zod.enum(['alta', 'media', 'baixa']).optional(),
+  "status": zod.enum(['pendente', 'concluida']).optional()
+})
+
+export const UpdateTarefaResponse = zod.object({
+  "id": zod.number(),
+  "titulo": zod.string(),
+  "descricao": zod.string().nullish(),
+  "contatoId": zod.number().nullish(),
+  "contatoNome": zod.string().nullish(),
+  "responsavel": zod.string().nullish(),
+  "dataHora": zod.coerce.date(),
+  "prioridade": zod.enum(['alta', 'media', 'baixa']),
+  "status": zod.enum(['pendente', 'concluida']),
+  "criadoEm": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a task
+ */
+export const DeleteTarefaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
  * @summary Get pipeline statistics per stage
  */
 export const GetPipelineStatsResponse = zod.object({

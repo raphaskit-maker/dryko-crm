@@ -39,6 +39,7 @@ import type {
   InboxStats,
   ListContactsParams,
   ListInboxParams,
+  ListTarefasParams,
   Mensagem,
   MensagemInput,
   Negocio,
@@ -46,7 +47,11 @@ import type {
   NegocioUpdate,
   PipelineStats,
   RespostaRapida,
-  RespostaRapidaInput
+  RespostaRapidaInput,
+  Tarefa,
+  TarefaInput,
+  TarefaStats,
+  TarefaUpdate
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1703,6 +1708,457 @@ export const useDeleteRespostaRapida = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getDeleteRespostaRapidaMutationOptions(options));
+    }
+
+export const getGetTarefasStatsUrl = () => {
+
+
+
+
+  return `/api/tarefas/stats`
+}
+
+/**
+ * @summary Get task stats (pending today count)
+ */
+export const getTarefasStats = async ( options?: RequestInit): Promise<TarefaStats> => {
+
+  return customFetch<TarefaStats>(getGetTarefasStatsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTarefasStatsQueryKey = () => {
+    return [
+    `/api/tarefas/stats`
+    ] as const;
+    }
+
+
+export const getGetTarefasStatsQueryOptions = <TData = Awaited<ReturnType<typeof getTarefasStats>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTarefasStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTarefasStatsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTarefasStats>>> = ({ signal }) => getTarefasStats({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTarefasStats>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTarefasStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getTarefasStats>>>
+export type GetTarefasStatsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get task stats (pending today count)
+ */
+
+export function useGetTarefasStats<TData = Awaited<ReturnType<typeof getTarefasStats>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTarefasStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTarefasStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListTarefasUrl = (params?: ListTarefasParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/tarefas?${stringifiedParams}` : `/api/tarefas`
+}
+
+/**
+ * @summary List all tasks
+ */
+export const listTarefas = async (params?: ListTarefasParams, options?: RequestInit): Promise<Tarefa[]> => {
+
+  return customFetch<Tarefa[]>(getListTarefasUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListTarefasQueryKey = (params?: ListTarefasParams,) => {
+    return [
+    `/api/tarefas`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListTarefasQueryOptions = <TData = Awaited<ReturnType<typeof listTarefas>>, TError = ErrorType<unknown>>(params?: ListTarefasParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTarefas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListTarefasQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTarefas>>> = ({ signal }) => listTarefas(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTarefas>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListTarefasQueryResult = NonNullable<Awaited<ReturnType<typeof listTarefas>>>
+export type ListTarefasQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all tasks
+ */
+
+export function useListTarefas<TData = Awaited<ReturnType<typeof listTarefas>>, TError = ErrorType<unknown>>(
+ params?: ListTarefasParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTarefas>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListTarefasQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateTarefaUrl = () => {
+
+
+
+
+  return `/api/tarefas`
+}
+
+/**
+ * @summary Create a new task
+ */
+export const createTarefa = async (tarefaInput: TarefaInput, options?: RequestInit): Promise<Tarefa> => {
+
+  return customFetch<Tarefa>(getCreateTarefaUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      tarefaInput,)
+  }
+);}
+
+
+
+
+export const getCreateTarefaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTarefa>>, TError,{data: BodyType<TarefaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTarefa>>, TError,{data: BodyType<TarefaInput>}, TContext> => {
+
+const mutationKey = ['createTarefa'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTarefa>>, {data: BodyType<TarefaInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createTarefa(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateTarefaMutationResult = NonNullable<Awaited<ReturnType<typeof createTarefa>>>
+    export type CreateTarefaMutationBody = BodyType<TarefaInput>
+    export type CreateTarefaMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a new task
+ */
+export const useCreateTarefa = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTarefa>>, TError,{data: BodyType<TarefaInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createTarefa>>,
+        TError,
+        {data: BodyType<TarefaInput>},
+        TContext
+      > => {
+      return useMutation(getCreateTarefaMutationOptions(options));
+    }
+
+export const getGetTarefaUrl = (id: number,) => {
+
+
+
+
+  return `/api/tarefas/${id}`
+}
+
+/**
+ * @summary Get a task by ID
+ */
+export const getTarefa = async (id: number, options?: RequestInit): Promise<Tarefa> => {
+
+  return customFetch<Tarefa>(getGetTarefaUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTarefaQueryKey = (id: number,) => {
+    return [
+    `/api/tarefas/${id}`
+    ] as const;
+    }
+
+
+export const getGetTarefaQueryOptions = <TData = Awaited<ReturnType<typeof getTarefa>>, TError = ErrorType<ErrorResponse>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTarefa>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTarefaQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTarefa>>> = ({ signal }) => getTarefa(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTarefa>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTarefaQueryResult = NonNullable<Awaited<ReturnType<typeof getTarefa>>>
+export type GetTarefaQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Get a task by ID
+ */
+
+export function useGetTarefa<TData = Awaited<ReturnType<typeof getTarefa>>, TError = ErrorType<ErrorResponse>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTarefa>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTarefaQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateTarefaUrl = (id: number,) => {
+
+
+
+
+  return `/api/tarefas/${id}`
+}
+
+/**
+ * @summary Update a task
+ */
+export const updateTarefa = async (id: number,
+    tarefaUpdate: TarefaUpdate, options?: RequestInit): Promise<Tarefa> => {
+
+  return customFetch<Tarefa>(getUpdateTarefaUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      tarefaUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateTarefaMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTarefa>>, TError,{id: number;data: BodyType<TarefaUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateTarefa>>, TError,{id: number;data: BodyType<TarefaUpdate>}, TContext> => {
+
+const mutationKey = ['updateTarefa'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTarefa>>, {id: number;data: BodyType<TarefaUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateTarefa(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTarefaMutationResult = NonNullable<Awaited<ReturnType<typeof updateTarefa>>>
+    export type UpdateTarefaMutationBody = BodyType<TarefaUpdate>
+    export type UpdateTarefaMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Update a task
+ */
+export const useUpdateTarefa = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTarefa>>, TError,{id: number;data: BodyType<TarefaUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateTarefa>>,
+        TError,
+        {id: number;data: BodyType<TarefaUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateTarefaMutationOptions(options));
+    }
+
+export const getDeleteTarefaUrl = (id: number,) => {
+
+
+
+
+  return `/api/tarefas/${id}`
+}
+
+/**
+ * @summary Delete a task
+ */
+export const deleteTarefa = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteTarefaUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteTarefaMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTarefa>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTarefa>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteTarefa'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTarefa>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteTarefa(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteTarefaMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTarefa>>>
+
+    export type DeleteTarefaMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Delete a task
+ */
+export const useDeleteTarefa = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTarefa>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteTarefa>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteTarefaMutationOptions(options));
     }
 
 export const getGetPipelineStatsUrl = () => {

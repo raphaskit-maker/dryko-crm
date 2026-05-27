@@ -238,6 +238,108 @@ export interface PipelineStats {
   etapas: EtapaPipeline[];
 }
 
+export type TarefaPrioridade = typeof TarefaPrioridade[keyof typeof TarefaPrioridade];
+
+
+export const TarefaPrioridade = {
+  alta: 'alta',
+  media: 'media',
+  baixa: 'baixa',
+} as const;
+
+export type TarefaStatus = typeof TarefaStatus[keyof typeof TarefaStatus];
+
+
+export const TarefaStatus = {
+  pendente: 'pendente',
+  concluida: 'concluida',
+} as const;
+
+export interface Tarefa {
+  id: number;
+  titulo: string;
+  /** @nullable */
+  descricao?: string | null;
+  /** @nullable */
+  contatoId?: number | null;
+  /** @nullable */
+  contatoNome?: string | null;
+  /** @nullable */
+  responsavel?: string | null;
+  dataHora: string;
+  prioridade: TarefaPrioridade;
+  status: TarefaStatus;
+  criadoEm: string;
+}
+
+export type TarefaInputPrioridade = typeof TarefaInputPrioridade[keyof typeof TarefaInputPrioridade];
+
+
+export const TarefaInputPrioridade = {
+  alta: 'alta',
+  media: 'media',
+  baixa: 'baixa',
+} as const;
+
+export type TarefaInputStatus = typeof TarefaInputStatus[keyof typeof TarefaInputStatus];
+
+
+export const TarefaInputStatus = {
+  pendente: 'pendente',
+  concluida: 'concluida',
+} as const;
+
+export interface TarefaInput {
+  /** @minLength 1 */
+  titulo: string;
+  /** @nullable */
+  descricao?: string | null;
+  /** @nullable */
+  contatoId?: number | null;
+  /** @nullable */
+  responsavel?: string | null;
+  dataHora: string;
+  prioridade: TarefaInputPrioridade;
+  status?: TarefaInputStatus;
+}
+
+export type TarefaUpdatePrioridade = typeof TarefaUpdatePrioridade[keyof typeof TarefaUpdatePrioridade];
+
+
+export const TarefaUpdatePrioridade = {
+  alta: 'alta',
+  media: 'media',
+  baixa: 'baixa',
+} as const;
+
+export type TarefaUpdateStatus = typeof TarefaUpdateStatus[keyof typeof TarefaUpdateStatus];
+
+
+export const TarefaUpdateStatus = {
+  pendente: 'pendente',
+  concluida: 'concluida',
+} as const;
+
+export interface TarefaUpdate {
+  /** @minLength 1 */
+  titulo?: string;
+  /** @nullable */
+  descricao?: string | null;
+  /** @nullable */
+  contatoId?: number | null;
+  /** @nullable */
+  responsavel?: string | null;
+  dataHora?: string;
+  prioridade?: TarefaUpdatePrioridade;
+  status?: TarefaUpdateStatus;
+}
+
+export interface TarefaStats {
+  pendentesHoje: number;
+  pendentesTotal: number;
+  vencidas: number;
+}
+
 export interface HistoricoMovimentacao {
   id: number;
   negocioId: number;
@@ -392,5 +494,27 @@ export const ListInboxCanal = {
   email: 'email',
   instagram: 'instagram',
   telefone: 'telefone',
+} as const;
+
+export type ListTarefasParams = {
+status?: ListTarefasStatus;
+prioridade?: ListTarefasPrioridade;
+};
+
+export type ListTarefasStatus = typeof ListTarefasStatus[keyof typeof ListTarefasStatus];
+
+
+export const ListTarefasStatus = {
+  pendente: 'pendente',
+  concluida: 'concluida',
+} as const;
+
+export type ListTarefasPrioridade = typeof ListTarefasPrioridade[keyof typeof ListTarefasPrioridade];
+
+
+export const ListTarefasPrioridade = {
+  alta: 'alta',
+  media: 'media',
+  baixa: 'baixa',
 } as const;
 
